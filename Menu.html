@@ -29,9 +29,9 @@
                 <!-- Liens de Navigation -->
                 <div class="hidden md:flex items-center gap-8 font-medium text-sm text-slate-600">
 
-                    <a href="/Menu.html" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 py-1">Menu</a>
-                    <a href="/Panier.html" class="hover:text-indigo-600 transition-colors py-1">Panier</a>
-
+                    <a href="/CafeteriaIntelligente/Menu.html" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 py-1">Menu</a>
+                    <a href="/CafeteriaIntelligente/Panier.html" class="hover:text-indigo-600 transition-colors py-1">Panier</a>
+                    <a href="/CafeteriaIntelligente/Commande.html" class="hover:text-indigo-600 transition-colors py-1">Commande</a>
                 </div>
 
 
@@ -179,8 +179,29 @@
                 },
                 AjouterAuPanier(indexProduit){
 
+                    // Recuperation du produit à ajouter
                     const produitSelectionne = this.productsList[indexProduit];
-                    
+
+                    // Recuperation et parsing du panier depuis le storage
+                    const panierStorage = localStorage.getItem("panier");
+                    let panier = panierStorage ? JSON.parse(panierStorage) : [];
+
+                    // Verification si le produit est deja dans le panier
+                    const produitExistant = panier.find(item => item.id === produitSelectionne.id);
+
+                    if (produitExistant) {
+                        // Si le produit existe, on incrémente sa quantite
+                        produitExistant.quantite = (produitExistant.quantite || 1) + 1;
+                    } else {
+                        // Sinon, on l'ajoute au panier avec une quantite initiale de 1
+                        panier.push({
+                            ...produitSelectionne,
+                            quantite: 1
+                        });
+                    }
+
+                    // Sauvegarde du panier mis a jour dans le localStorage
+                    localStorage.setItem("panier", JSON.stringify(panier));
 
                 },
             },
