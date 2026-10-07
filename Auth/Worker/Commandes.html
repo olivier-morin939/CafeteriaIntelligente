@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafétéria Teccart | Accueil</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                
+                <!-- Logo & Nom -->
+                <a href="/CafeteriaIntelligente/index.html" class="flex items-center gap-3 group">
+                    <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-md group-hover:bg-indigo-700 transition-colors">
+                        <i class="fa-solid fa-utensils text-xl"></i>
+                    </div>
+                    <span class="font-extrabold text-xl text-slate-900 tracking-tight">
+                        Cafétéria <span class="text-indigo-600">Teccart</span>
+                    </span>
+                </a>
+
+                <!-- Liens de Navigation -->
+                <div class="hidden md:flex items-center gap-8 font-medium text-sm text-slate-600">
+                    <a href="/CafeteriaIntelligente/Auth/Worker/Commandes.html" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 py-1">Commandes</a>
+                </div>
+
+                <!-- Bouton Deconnexion Navigation -->
+                <div>
+                    <a href="/CafeteriaIntelligente/Login.html" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm text-sm">
+                        <span>Déconnexion</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Application Vue  -->
+    <div id="app" class="max-w-6xl mx-auto px-4 py-8 flex-grow">
+        
+       <h1> Ici on va recevoirs les commandes des étudiants.</h1>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 text-center text-sm text-slate-500">
+            <p>© <span id="year"></span> Caféteria Teccart — Créé par <span class="font-semibold text-slate-700">Olivier Morin</span> & <span class="font-semibold text-slate-700">Jean-Philippe Loubert</span></p>
+        </div>
+    </footer>
+
+    <script>
+        // Mise à jour automatique de l'année dans le footer
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    
+                };
+            }
+        });
+
+        app.mount("#app");
+    </script>
+</body>
+</html>

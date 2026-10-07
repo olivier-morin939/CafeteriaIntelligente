@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafétéria Teccart | Accueil</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                
+                <!-- Logo & Nom -->
+                <a href="/CafeteriaIntelligente/index.html" class="flex items-center gap-3 group">
+                    <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-md group-hover:bg-indigo-700 transition-colors">
+                        <i class="fa-solid fa-utensils text-xl"></i>
+                    </div>
+                    <span class="font-extrabold text-xl text-slate-900 tracking-tight">
+                        Cafétéria <span class="text-indigo-600">Teccart</span>
+                    </span>
+                </a>
+
+                <!-- Liens de Navigation -->
+                <div class="hidden md:flex items-center gap-8 font-medium text-sm text-slate-600">
+                    <a href="/CafeteriaIntelligente/index.html" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 py-1">Accueil</a>
+                    <a href="/CafeteriaIntelligente/PreviewMenu.html" class="hover:text-indigo-600 transition-colors py-1">Menu</a>
+                </div>
+
+                <!-- Bouton Connexion Navigation -->
+                <div>
+                    <a href="/CafeteriaIntelligente/Login.html" class="inline-flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold px-4 py-2 rounded-xl transition-colors text-sm">
+                        <span>Connexion</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Application Vue / Contenu Principal -->
+    <div id="app" class="max-w-6xl mx-auto px-4 py-8 flex-grow">
+        
+        <!-- Hero Section -->
+        <section class="bg-white rounded-3xl p-8 sm:p-12 shadow-sm border border-slate-200 mb-12 flex flex-col md:flex-row items-center gap-8">
+            <div class="flex-1 space-y-6 text-center md:text-left">
+                <span class="inline-block bg-indigo-50 text-indigo-700 text-xs font-semibold px-3 py-1 rounded-full border border-indigo-100">
+                     Express & Intelligent
+                </span>
+                <h1 class="text-3xl sm:text-5xl font-black text-slate-900 leading-tight">
+                    Réservez votre repas, <span class="text-indigo-600">évitez la file</span>.
+                </h1>
+                <p class="text-slate-600 text-base sm:text-lg">
+                    Commandez votre repas directement depuis votre téléphone ou votre ordinateur et récupérez-le au comptoir sans attendre.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 pt-2">
+                    <a href="/CafeteriaIntelligente/Menu.html" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-indigo-200 transition-all text-center">
+                        Voir le Menu <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </a>
+                    <a href="/CafeteriaIntelligente/Login.html" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-6 py-3 rounded-xl transition-all text-center">
+                        Suivre une commande
+                    </a>
+                </div>
+            </div>
+            
+            <div class="flex-1 flex justify-center">
+                <div class="relative w-full max-w-sm bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-3xl p-6 text-white shadow-xl">
+                    <div class="flex items-center justify-between border-b border-white/20 pb-4 mb-4">
+                        <div>
+                            <p class="text-xs text-indigo-100">Statut de la cafétéria</p>
+                            <p class="font-bold text-sm">Ouverte — Service fluide</p>
+                        </div>
+                        <span class="h-3 w-3 bg-emerald-400 rounded-full animate-pulse"></span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-white/10 backdrop-blur-md rounded-xl p-3 flex items-center gap-3">
+                            <i class="fa-solid fa-clock text-indigo-200 text-xl"></i>
+                            <div>
+                                <p class="text-xs text-indigo-100">Temps d'attente estimé</p>
+                                <p class="font-bold text-sm">< 2 minutes</p>
+                            </div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md rounded-xl p-3 flex items-center gap-3">
+                            <i class="fa-solid fa-fire text-amber-300 text-xl"></i>
+                            <div>
+                                <p class="text-xs text-indigo-100">Plat populaire du jour</p>
+                                <p class="font-bold text-sm">{{ platDuJour }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section : Comment ça marche ? -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-extrabold text-slate-900 text-center mb-8">Comment ça fonctionne ?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center">
+                    <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg">
+                        1
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-lg mb-2">Choisis ton menu</h3>
+                    <p class="text-slate-600 text-sm">Parcours nos plats du jour, sandwichs, boissons et desserts directement en ligne.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center">
+                    <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg">
+                        2
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-lg mb-2">Réserve l'heure</h3>
+                    <p class="text-slate-600 text-sm">Sélectionne le créneau horaire qui convient le mieux à ton pause de cours.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center">
+                    <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-lg">
+                        3
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-lg mb-2">Récupère & Déguste</h3>
+                    <p class="text-slate-600 text-sm">Présente ton numéro de commande au comptoir express et récupère ton repas instantanément.</p>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 text-center text-sm text-slate-500">
+            <p>© <span id="year"></span> Caféteria Teccart — Créé par <span class="font-semibold text-slate-700">Olivier Morin</span> & <span class="font-semibold text-slate-700">Jean-Philippe Loubert</span></p>
+        </div>
+    </footer>
+
+    <script>
+        // Mise à jour automatique de l'année dans le footer
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    platDuJour: 'Poulet Général Tao & Riz'
+                };
+            }
+        });
+
+        app.mount("#app");
+    </script>
+</body>
+</html>

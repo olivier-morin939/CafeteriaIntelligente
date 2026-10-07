@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caféteria Teccart | Menu</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Font Awesome (Icônes) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col font-sans antialiased">
+
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                
+                <!-- Logo & Nom -->
+                <a href="/CafeteriaIntelligente/index.html" class="flex items-center gap-3 group">
+                    <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-md group-hover:bg-indigo-700 transition-colors">
+                        <i class="fa-solid fa-utensils text-xl"></i>
+                    </div>
+                    <span class="font-extrabold text-xl text-slate-900 tracking-tight">
+                        Cafétéria <span class="text-indigo-600">Teccart</span>
+                    </span>
+                </a>
+
+                <!-- Liens de Navigation -->
+                <div class="hidden md:flex items-center gap-8 font-medium text-sm text-slate-600">
+                    <a href="/CafeteriaIntelligente/index.html" class="hover:text-indigo-600 transition-colors py-1">Accueil</a>
+                    <a href="/CafeteriaIntelligente/PreviewMenu.html" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 py-1">Menu</a>
+                </div>
+
+                <!-- Bouton Connexion Navigation -->
+                <div>
+                    <a href="/CafeteriaIntelligente/Login.html" class="inline-flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold px-4 py-2 rounded-xl transition-colors text-sm">
+                        <span>Connexion</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Application Vue -->
+    <main id="app" class="max-w-6xl mx-auto px-4 py-10 flex-grow w-full">
+        
+        <div v-if="productsList.length > 0">
+            <!-- Header -->
+            <header class="text-center max-w-2xl mx-auto mb-10">
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
+                    Liste de repas disponibles
+                </h1>
+                <p class="text-slate-600 font-medium mb-6">
+                    Caféteria Teccart — Faits frais tous les jours
+                </p>
+
+                <!-- BOUTON : Accéder au menu complet -->
+                <a 
+                    href="/CafeteriaIntelligente/Login.html" 
+                    class="inline-flex items-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
+                >
+                    <i class="fa-solid fa-lock text-sm"></i>
+                    <span>Accéder au menu complet</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+            </header>
+
+            <!-- Grille de cartes -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div 
+                    v-for="(product, index) in productsList" 
+                    :key="index"
+                    class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-slate-200/80 flex flex-col justify-between group"
+                >
+                    <div>
+                        <!-- Container Image -->
+                        <div class="relative h-48 bg-slate-200 overflow-hidden">
+                            <img 
+                                :src="'./public/img/' + product.productImagePath" 
+                                :alt="product.productName"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <!-- Badge Code -->
+                            <span class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-xs px-2.5 py-1 rounded-full font-mono shadow-sm">
+                                #{{ product.productNumber }}
+                            </span>
+                        </div>
+
+                        <!-- Contenu texte -->
+                        <div class="p-5">
+                            <div class="flex justify-between items-start gap-2 mb-2">
+                                <h2 class="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-snug">
+                                    {{ product.productName }}
+                                </h2>
+                                <!-- Badge Prix -->
+                                <span class="bg-emerald-100 text-emerald-800 font-bold text-sm px-3 py-1 rounded-lg shrink-0">
+                                    {{ Number(product.productPrice).toFixed(2) }} $
+                                </span>
+                            </div>
+                            <p class="text-slate-600 text-sm leading-relaxed">
+                                {{ product.productDesc }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bloc secondaire bas de page -->
+            <div class="mt-12 text-center bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 class="text-lg font-bold text-slate-900 mb-1">Vous souhaitez commander en ligne ?</h3>
+                <p class="text-slate-600 text-sm mb-4">Connectez-vous à votre compte pour accéder au menu interactif complet.</p>
+                <a href="/CafeteriaIntelligente/Login.html" class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold text-sm hover:underline">
+                    <span>Se connecter à mon compte</span>
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 text-center text-sm text-slate-500">
+            <p>© <span id="year"></span> Caféteria Teccart — Créé par <span class="font-semibold text-slate-700">Olivier Morin</span> & <span class="font-semibold text-slate-700">Jean-Philippe Loubert</span></p>
+        </div>
+    </footer>
+
+    <script>
+        // Mettre à jour l'année automatiquement
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Fonction utilitaire pour générer le code produit
+        function toutGenererUnCode(longueur = 8) {
+            let result = '';
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            for (let i = 0; i < longueur; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        // Classe Produit
+        class Produit {
+            #_productNumber;
+
+            constructor(productName, productDesc, productPrice, productImagePath) {
+                this.#_productNumber = toutGenererUnCode(8);
+                this.productName = productName;
+                this.productDesc = productDesc;
+                this.productPrice = productPrice;
+                this.productImagePath = productImagePath;
+            }
+
+        }
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    productsList: [],
+                };
+            },
+            mounted() {
+                this.InitialisePreviewProducts();
+            },
+            methods: {
+                InitialisePreviewProducts() {
+
+                    const items = [
+                        new Produit("Pizza pepperoni", "Pizza garnie de pepperoni, fromage mozzarella et sauce tomate maison.", 14.99, "pizza.png"),
+                        new Produit("Hot-dog classique", "Hot-dog servi dans un pain moelleux avec moutarde, ketchup et relish.", 7.49, "hotdog.png"),
+                        new Produit("Lasagne gratinée", "Lasagne maison composée de sauce à la viande, pâtes fraîches et fromage gratiné.", 16.99, "lasagne.png"),
+                    ];
+
+                    this.productsList = items;
+                }
+            }
+        });
+
+        app.mount("#app");
+    </script>
+</body>
+</html>
