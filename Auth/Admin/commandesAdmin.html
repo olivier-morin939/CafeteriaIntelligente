@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafétéria Teccart | Commandes (Admin)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <!-- Navigation Spécifique Admin -->
+    <nav class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                
+                <!-- Logo & Nom Admin -->
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="bg-purple-600 text-white p-2 rounded-xl shadow-md">
+                        <i class="fa-solid fa-user-shield text-xl"></i>
+                    </div>
+                    <span class="font-extrabold text-xl text-slate-900 tracking-tight">
+                        Teccart <span class="text-purple-600">Espace Admin</span>
+                    </span>
+                </a>
+
+                <!-- Liens de Navigation Admin -->
+                <div class="hidden md:flex items-center gap-8 font-medium text-sm text-slate-600">
+                    <a href="/index.html" class="hover:text-purple-600 transition-colors py-1">Accueil</a>
+                    <a href="/Auth/admin/commandesAdmin.html" class="text-purple-600 font-semibold border-b-2 border-purple-600 py-1">Commandes</a>
+                    <a href="/Auth/admin/gestionAdmin.html" class="hover:text-purple-600 transition-colors py-1">Gestion des Repas & Stock</a>
+                </div>
+
+                <!-- Bouton Déconnexion -->
+                <div>
+                    <a href="/Login.html" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm">
+                        <span>Déconnexion</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Application Vue (Structure HTML complète de la vue des commandes) -->
+    <div id="app" class="max-w-6xl mx-auto px-4 py-8 flex-grow">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Suivi des Commandes (Cuisine - Admin)</h1>
+            <p class="text-slate-600 font-medium">Gérez et mettez à jour l'état des commandes passées par les étudiants en temps réel</p>
+        </header>
+
+        <!-- Si aucune commande n'a été reçue -->
+        <div v-if="commandesList.length === 0" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center max-w-lg mx-auto">
+            <div class="w-16 h-16 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-clipboard-list"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900 mb-2">Aucune commande en attente</h2>
+            <p class="text-slate-500 text-sm mb-6">Les commandes validées par les étudiants apparaîtront ici en temps réel.</p>
+        </div>
+
+        <!-- Grille des commandes reçues -->
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div v-for="commande in commandesList" :key="commande.id" 
+                class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between space-y-4 relative overflow-hidden"
+                :class="{
+                    'border-l-4 border-l-amber-500': commande.statut === 'Commande payée',
+                    'border-l-4 border-l-blue-500': commande.statut === 'En préparation',
+                    'border-l-4 border-l-emerald-500': commande.statut === 'Prête'
+                }">
+
+                <!-- En-tête de la carte -->
+                <div>
+                    <div class="flex justify-between items-start border-b border-slate-100 pb-3 gap-2">
+                        <div>
+                            <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-bold">{{ commande.id }}</span>
+                            <p class="text-xs text-slate-400 mt-1">Commandé le : {{ commande.date }}</p>
+                        </div>
+
+                        <!-- Badge Statut -->
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold" :class="{
+                            'bg-amber-100 text-amber-800': commande.statut === 'Commande payée',
+                            'bg-blue-100 text-blue-800': commande.statut === 'En préparation',
+                            'bg-emerald-100 text-emerald-800': commande.statut === 'Prête'
+                        }">
+                            {{ commande.statut }}
+                        </span>
+                    </div>
+
+                    <!-- Infos de ramassage et paiement -->
+                    <div class="bg-slate-50 border border-slate-200/60 rounded-xl p-3 my-3 text-xs space-y-1.5 font-medium text-slate-700">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-regular fa-clock text-amber-600"></i>
+                            <span>Heure de ramassage : <strong class="text-slate-900">{{ commande.heureRamassage || 'Non spécifiée' }}</strong></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-wallet text-amber-600"></i>
+                            <span>Paiement : <strong class="text-slate-900">{{ commande.typePaiement || 'Non spécifié' }}</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Liste des articles commandés -->
+                    <div class="space-y-2 mt-3">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Articles commandés :</p>
+                        <div v-for="(article, artIndex) in commande.articles" :key="artIndex" class="flex justify-between items-center text-sm bg-slate-50/50 p-2 rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded text-xs">{{ article.quantite }}x</span>
+                                <span class="text-slate-800 font-medium">{{ article.productName }}</span>
+                            </div>
+                            <span class="text-slate-600 text-xs font-semibold">{{ (article.productPrice * article.quantite).toFixed(2) }} $</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pied de carte : Total et Boutons d'action -->
+                <div class="border-t border-slate-100 pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div class="font-bold text-base text-slate-900">
+                        Total : <span class="text-amber-600">{{ commande.total }} $</span>
+                    </div>
+
+                    <!-- Sélection du statut et bouton de validation -->
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <select 
+                            v-model="commande.nouveauStatut" 
+                            class="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl px-3 py-2 font-medium focus:ring-amber-500 focus:border-amber-500"
+                        >
+                            <option value="" disabled>-- Changer le statut --</option>
+                            <option value="Commande payée">Commande payée</option>
+                            <option value="En préparation">En préparation</option>
+                            <option value="Prête">Prête</option>
+                        </select>
+
+                        <button 
+                            @click="validerStatut(commande.id)" 
+                            class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-4 py-2 rounded-xl text-xs transition-colors shadow-sm shrink-0 flex items-center gap-1.5"
+                        >
+                            <i class="fa-solid fa-check"></i>
+                            <span>Valider</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast de Notification -->
+        <div v-if="showToast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-700">
+            <div class="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-check text-sm"></i>
+            </div>
+            <div>
+                <p class="font-bold text-sm">{{ toastMessage }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 text-center text-sm text-slate-500">
+            <p>© <span id="year"></span> Caféteria Teccart — Espace Administrateur</p>
+        </div>
+    </footer>
+
+    <!-- Script Vue.js -->
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    commandesList: [],
+                    showToast: false,
+                    toastMessage: '',
+                    toastTimeout: null
+                };
+            },
+            mounted() {
+                this.chargerCommandes();
+                // Actualisation automatique toutes les 3 secondes pour synchroniser en temps réel
+                setInterval(() => {
+                    this.chargerCommandes();
+                }, 3000);
+            },
+            methods: {
+                chargerCommandes() {
+                    const commandesStorage = localStorage.getItem("commandes");
+                    if (commandesStorage) {
+                        const parsed = JSON.parse(commandesStorage);
+                        const commandesFiltrees = parsed.filter(c => c.statut === 'Commande payée' || c.statut === 'En préparation' || c.statut === 'Prête');
+
+                        if (this.commandesList.length !== commandesFiltrees.length) {
+                            this.commandesList = commandesFiltrees.map(c => ({
+                                ...c,
+                                nouveauStatut: c.nouveauStatut || ''
+                            }));
+                        } else {
+                            commandesFiltrees.forEach((nouvelleCmd, i) => {
+                                if (this.commandesList[i]) {
+                                    this.commandesList[i].statut = nouvelleCmd.statut;
+                                }
+                            });
+                        }
+                    } else {
+                        this.commandesList = [];
+                    }
+                },
+                validerStatut(commandeId) {
+                    const commandeCourante = this.commandesList.find(c => c.id === commandeId);
+                    if (!commandeCourante) return;
+
+                    if (!commandeCourante.nouveauStatut) {
+                        this.toast("Veuillez sélectionner un statut dans la liste.");
+                        return;
+                    }
+
+                    const statutChoisi = commandeCourante.nouveauStatut;
+                    
+                    const commandesStorage = localStorage.getItem("commandes");
+                    if (commandesStorage) {
+                        let toutesLesCommandes = JSON.parse(commandesStorage);
+                        const indexGlobal = toutesLesCommandes.findIndex(c => c.id === commandeId);
+                        if (indexGlobal !== -1) {
+                            toutesLesCommandes[indexGlobal].statut = statutChoisi;
+                            localStorage.setItem("commandes", JSON.stringify(toutesLesCommandes));
+                        }
+                    }
+
+                    commandeCourante.statut = statutChoisi;
+                    commandeCourante.nouveauStatut = '';
+                    this.toast("Statut mis à jour avec succès : " + statutChoisi);
+                },
+                toast(message) {
+                    this.toastMessage = message;
+                    this.showToast = true;
+
+                    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+                    this.toastTimeout = setTimeout(() => {
+                        this.showToast = false;
+                    }, 3000);
+                }
+            }
+        });
+
+        app.mount("#app");
+    </script>
+</body>
+</html>

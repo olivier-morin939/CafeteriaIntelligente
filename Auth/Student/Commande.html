@@ -19,7 +19,7 @@
             <div class="flex items-center justify-between h-16">
                 
                 <!-- Logo & Nom -->
-                <a href="" class="flex items-center gap-3 group">
+                <a href="/index.html" class="flex items-center gap-3 group">
                     <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-md group-hover:bg-indigo-700 transition-colors">
                         <i class="fa-solid fa-utensils text-xl"></i>
                     </div>
@@ -30,6 +30,7 @@
 
                 <!-- Liens de Navigation -->
                 <div class="hidden md:flex items-center gap-8 font-medium text-sm text-slate-600">
+                    <a href="/index.html" class="hover:text-indigo-600 transition-colors py-1">Accueil</a>
                     <a href="/Auth/Student/Menu.html" class="hover:text-indigo-600 transition-colors py-1">Menu</a>
                     <a href="/Auth/Student/Panier.html" class="hover:text-indigo-600 transition-colors py-1">Panier</a>
                     <a href="/Auth/Student/Commande.html" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 py-1">Commande</a>
@@ -49,7 +50,241 @@
 
     <!-- Application Vue  -->
     <div id="app" class="max-w-6xl mx-auto px-4 py-8 flex-grow">
-        <h1>Ici sera la page des commandes apres connexion des etudiants.</h1>
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Suivi des Commandes</h1>
+            <p class="text-slate-600 font-medium">Consultez l'historique et le statut de vos commandes en cours</p>
+        </header>
+
+        <!-- Si aucune commande n'a été passée -->
+        <div v-if="commandesList.length === 0" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center max-w-lg mx-auto">
+            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900 mb-2">Aucune commande pour le moment</h2>
+            <p class="text-slate-500 text-sm mb-6">Vous n'avez pas encore passé de commande sur notre plateforme.</p>
+            <a href="/Auth/Student/Menu.html" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-sm text-sm">
+                <i class="fa-solid fa-utensils"></i>
+                <span>Commander un repas</span>
+            </a>
+        </div>
+
+        <!-- Liste des commandes -->
+        <div v-else class="space-y-6 max-w-3xl mx-auto">
+            
+            <!-- Carte commande avec fond vert dynamique si payée -->
+            <div v-for="(commande, index) in commandesList" 
+                :key="index" 
+                class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4"
+                :class="{
+                    'bg-emerald-50/60 border-emerald-200': commande.statut === 'Commande payée' || commande.statut === 'Prête',
+                    'bg-white border-slate-200': commande.statut === 'En attente' || commande.statut === 'En préparation'
+                }">
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-2">
+                    <div>
+                        <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-bold">{{ commande.id }}</span>
+                        <p class="text-xs text-slate-400 mt-1">Commandé le : {{ commande.date }}</p>
+                    </div>
+
+                    <!-- Affichage dynamique du statut -->
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold" :class="{
+                            'bg-amber-100 text-amber-800': commande.statut === 'En attente',
+                            'bg-emerald-100 text-emerald-800': commande.statut === 'Commande payée' || commande.statut === 'Prête',
+                            'bg-blue-100 text-blue-800': commande.statut === 'En préparation'
+                        }">
+                            {{ commande.statut }}
+                        </span>
+
+                        <!-- Bouton Supprimer la commande (Désactivé si "En préparation") -->
+                        <button 
+                            v-if="commande.statut !== 'En préparation'"
+                            @click="supprimerCommande(index)" 
+                            class="text-slate-400 hover:text-red-600 transition-colors p-1.5" 
+                            title="Supprimer la commande"
+                        >
+                            <i class="fa-solid fa-trash-can text-sm"></i>
+                        </button>
+                        <button 
+                            v-else
+                            disabled
+                            class="text-slate-300 cursor-not-allowed p-1.5" 
+                            title="Impossible de supprimer une commande en cours de préparation en cuisine"
+                        >
+                            <i class="fa-solid fa-trash-can text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Articles de la commande -->
+                <div class="space-y-3">
+                    <div v-for="(article, artIndex) in commande.articles" :key="artIndex" class="flex justify-between items-center text-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">{{ article.quantite }}x</span>
+                            <span class="text-slate-800 font-medium">{{ article.productName }}</span>
+                        </div>
+                        <span class="text-slate-600 font-semibold">{{ (article.productPrice * article.quantite).toFixed(2) }} $</span>
+                    </div>
+                </div>
+
+                <!-- Choix de l'heure de ramassage & Type de paiement (Si la commande est 'En attente') -->
+                <div v-if="commande.statut === 'En attente'" class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm space-y-3">
+                    <!-- Heure de ramassage -->
+                    <div class="space-y-1">
+                        <label class="block font-semibold text-slate-700 text-xs">
+                            <i class="fa-regular fa-clock mr-1 text-indigo-600"></i>
+                            Heure de ramassage obligatoire (entre 10:00 et 14:00) :
+                        </label>
+                        <input 
+                            type="time" 
+                            v-model="commande.heureRamassage" 
+                            min="10:00" 
+                            max="14:00"
+                            class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2 font-medium"
+                        />
+                    </div>
+
+                    <!-- Message d'information pour l'heure de ramassage -->
+                    <p v-if="!formulaireValide(commande)" class="text-xs text-red-500 font-medium pt-1">
+                        * Veuillez sélectionner une heure valide (10h-14h) et un type de paiement pour régler la commande.
+                    </p>
+
+                    <!-- Type de paiement obligatoire -->
+                    <div class="space-y-1">
+                        <label class="block font-semibold text-slate-700 text-xs">
+                            <i class="fa-solid fa-credit-card mr-1 text-indigo-600"></i>
+                            Type de paiement obligatoire :
+                        </label>
+                        <select 
+                            v-model="commande.typePaiement"
+                            class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2 font-medium"
+                        >
+                            <option value="" disabled selected>-- Choisissez un mode de paiement --</option>
+                            <option value="Carte de crédit (MasterCard / Visa)">Carte de crédit (MasterCard / Visa)</option>
+                            <option value="Paypal">PayPal</option>
+                            <option value="Virement">Virement</option>
+                        </select>
+                    </div>
+
+                    <!-- Champs spécifiques selon le mode de paiement choisi -->
+                    <div v-if="commande.typePaiement === 'Carte de crédit (MasterCard / Visa)'" class="space-y-2 pt-2 border-t border-slate-200">
+                        <input 
+                            type="text" 
+                            v-model="commande.infosPaiement.numeroCarte" 
+                            placeholder="Numéro à 16 chiffres (ex: 4532...)" 
+                            maxlength="19"
+                            autocomplete="off"
+                            class="bg-white border border-slate-300 text-slate-800 text-xs rounded-lg block w-full p-2 font-medium"
+                        />
+                        <div class="grid grid-cols-2 gap-2">
+                            <input 
+                                type="text" 
+                                v-model="commande.infosPaiement.expiration" 
+                                placeholder="MM/AA" 
+                                maxlength="5"
+                                autocomplete="off"
+                                class="bg-white border border-slate-300 text-slate-800 text-xs rounded-lg block w-full p-2 font-medium"
+                            />
+                            <input 
+                                type="password" 
+                                v-model="commande.infosPaiement.cvv" 
+                                placeholder="Code de sécurité (CVV)" 
+                                maxlength="4"
+                                autocomplete="off"
+                                class="bg-white border border-slate-300 text-slate-800 text-xs rounded-lg block w-full p-2 font-medium"
+                            />
+                        </div>
+                    </div>
+
+                    <div v-else-if="commande.typePaiement === 'Paypal'" class="space-y-1 pt-2 border-t border-slate-200">
+                        <input 
+                            type="email" 
+                            v-model="commande.infosPaiement.emailPaypal" 
+                            placeholder="Courriel ou identifiant PayPal" 
+                            class="bg-white border border-slate-300 text-slate-800 text-xs rounded-lg block w-full p-2 font-medium"
+                        />
+                    </div>
+
+                    <div v-else-if="commande.typePaiement === 'Virement'" class="space-y-1 pt-2 border-t border-slate-200">
+                        <input 
+                            type="text" 
+                            v-model="commande.infosPaiement.refVirement" 
+                            placeholder="Numéro de référence du virement bancaire" 
+                            class="bg-white border border-slate-300 text-slate-800 text-xs rounded-lg block w-full p-2 font-medium"
+                        />
+                    </div>
+                </div>
+
+                <!-- Affichage de l'heure sélectionnée, du paiement et de l'état -->
+                <div v-else-if="commande.heureRamassage" class="bg-emerald-100/80 border border-emerald-200 px-4 py-3 rounded-xl space-y-2">
+                    <div class="flex flex-col sm:flex-row justify-between text-xs font-semibold text-emerald-800 gap-1">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-regular fa-clock"></i>
+                            Ramassage : {{ commande.heureRamassage }}
+                        </span>
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-wallet"></i>
+                            Paiement par : {{ commande.typePaiement || 'Non spécifié' }}
+                        </span>
+                    </div>
+                    
+                    <!-- État de la commande et bouton annuler -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs pt-1 border-t border-emerald-200/60 gap-2">
+                        <div class="space-y-1">
+                            <p class="font-medium text-emerald-900">
+                                État actuel : <span class="font-bold underline">Payée et en attente de traitement par la cuisine</span>
+                            </p>
+                        </div>
+
+                        <button 
+                            type="button" 
+                            @click="annulerCommande(commande.id)"
+                            class="text-red-600 hover:text-red-800 font-semibold inline-flex items-center gap-1 transition-colors self-start sm:self-auto"
+                        >
+                            <i class="fa-solid fa-ban text-xs"></i>
+                            <span>Annuler la commande</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pied de carte : Total + Bouton Paiement -->
+                <div class="border-t border-slate-200/60 pt-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="font-bold text-base text-slate-900">
+                        <span>Total : </span>
+                        <span class="text-indigo-600">{{ commande.total }} $</span>
+                    </div>
+
+                    <!-- Bouton Payer maintenant -->
+                    <button 
+                        v-if="commande.statut === 'En attente'" 
+                        @click="payerCommande(index)"
+                        :disabled="!formulaireValide(commande)"
+                        class="font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm text-sm flex items-center gap-2 active:scale-95 text-white"
+                        :class="{
+                            'bg-emerald-600 hover:bg-emerald-700 cursor-pointer': formulaireValide(commande),
+                            'bg-slate-300 cursor-not-allowed opacity-70': !formulaireValide(commande)
+                        }"
+                    >
+                        <i class="fa-solid fa-credit-card text-xs"></i>
+                        <span>Payer maintenant</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast de Notification (Popup) -->
+        <div 
+            v-if="showToast" 
+            class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 transition-all duration-300 border border-slate-700"
+            >
+            <div class="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-check text-sm"></i>
+            </div>
+            <div>
+                <p class="font-bold text-sm">{{ toastMessage }}</p>
+                <p class="text-xs text-slate-400">Mise à jour effectuée avec succès.</p>
+            </div>
+        </div>
     </div>
 
     <!-- Footer -->
@@ -60,14 +295,133 @@
     </footer>
 
     <script>
-        // Mise à jour automatique de l'année dans le footer
-        document.getElementById('year').textContent = new Date().getFullYear();
+        document.getElementById('year').textContent = new Date().getFullYear(); // Mise à jour automatique de l'année dans le footer
 
         const app = Vue.createApp({
             data() {
                 return {
-                    
+                    commandesList: [],
+                    showToast: false,
+                    toastMessage: '',
+                    toastTimeout: null
                 };
+            },
+            mounted() {
+                this.chargerCommandes();
+            },
+            methods: {
+                chargerCommandes() {
+                    const commandesStorage = localStorage.getItem("commandes");
+                    if (commandesStorage) {
+                        const parsed = JSON.parse(commandesStorage);
+                        this.commandesList = parsed.map(c => ({
+                            ...c,
+                            heureRamassage: c.heureRamassage || '',
+                            typePaiement: c.typePaiement || ''
+                        }));
+                    }
+                },
+                formulaireValide(commande) {
+                    // 1. Vérification de l'heure (entre 10:00 et 14:00)
+                    const heureOk = commande.heureRamassage && commande.heureRamassage >= "10:00" && commande.heureRamassage <= "14:00";
+                    if (!heureOk) return false;
+
+                    // S'assurer que l'objet infosPaiement existe
+                    if (!commande.infosPaiement) {
+                        commande.infosPaiement = { numeroCarte: '', expiration: '', cvv: '', emailPaypal: '', refVirement: '' };
+                    }
+
+                    const infos = commande.infosPaiement;
+
+                    // 2. Validation selon le type de paiement choisi
+                    if (commande.typePaiement === 'Carte de crédit (MasterCard / Visa)') {
+                        return (infos.numeroCarte || '').trim().length >= 12 && 
+                            (infos.expiration || '').trim().length >= 4 && 
+                            (infos.cvv || '').trim().length >= 3;
+                    } else if (commande.typePaiement === 'Paypal') {
+                        return (infos.emailPaypal || '').trim() !== '';
+                    } else if (commande.typePaiement === 'Virement') {
+                        return (infos.refVirement || '').trim() !== '';
+                    }
+
+                    return false;
+                },
+                payerCommande(index) {
+                    // Changement du statut
+                    this.commandesList[index].statut = 'Commande payée';
+                    localStorage.setItem("commandes", JSON.stringify(this.commandesList));
+
+                    this.toast("Paiement réussi ! Merci !");
+                },
+                supprimerCommande(index) {
+                    // Sécurité supplémentaire : bloquer si le statut est "En préparation"
+                    if (this.commandesList[index].statut === 'En préparation') {
+                        this.toast("Impossible de supprimer une commande en cours de préparation !");
+                        return;
+                    }
+
+                    this.commandesList.splice(index, 1);
+                    localStorage.setItem("commandes", JSON.stringify(this.commandesList));
+
+                    this.toast("Commande supprimée avec succès !");
+                },
+                annulerCommande(commandeId) {
+                    // Trouver la commande dans la liste locale
+                    const commandeCourante = this.commandesList.find(c => c.id === commandeId);
+                    if (!commandeCourante) return;
+
+                    // Vérification de sécurité : impossible d'annuler si la commande est en préparation ou prête
+                    if (commandeCourante.statut === 'En préparation' || commandeCourante.statut === 'Prête') {
+                        this.toast("Impossible d'annuler : la commande est déjà en cours de préparation ou prête !");
+                        return;
+                    }
+
+                    // Mettre à jour dans la liste globale du localStorage
+                    const commandesStorage = localStorage.getItem("commandes");
+                    if (commandesStorage) {
+                        let toutesLesCommandes = JSON.parse(commandesStorage);
+                        const indexGlobal = toutesLesCommandes.findIndex(c => c.id === commandeId);
+                        
+                        if (indexGlobal !== -1) {
+                            // Remettre à zéro les champs et repasser le statut à 'En attente'
+                            toutesLesCommandes[indexGlobal].statut = 'En attente';
+                            toutesLesCommandes[indexGlobal].heureRamassage = '';
+                            toutesLesCommandes[indexGlobal].typePaiement = '';
+                            toutesLesCommandes[indexGlobal].infosPaiement = {
+                                numeroCarte: '',
+                                expiration: '',
+                                cvv: '',
+                                emailPaypal: '',
+                                refVirement: ''
+                            };
+                            
+                            localStorage.setItem("commandes", JSON.stringify(toutesLesCommandes));
+                        }
+                    }
+
+                    // Mettre à jour l'affichage local immédiatement
+                    commandeCourante.statut = 'En attente';
+                    commandeCourante.heureRamassage = '';
+                    commandeCourante.typePaiement = '';
+                    commandeCourante.infosPaiement = {
+                        numeroCarte: '',
+                        expiration: '',
+                        cvv: '',
+                        emailPaypal: '',
+                        refVirement: ''
+                    };
+
+                    this.toast("Commande annulée, retour à l'état initial.");
+                },
+                toast(message) {
+                    this.toastMessage = message;
+                    this.showToast = true;
+
+                    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+                    this.toastTimeout = setTimeout(() => {
+                        this.showToast = false;
+                    }, 3000);
+                }
             }
         });
 

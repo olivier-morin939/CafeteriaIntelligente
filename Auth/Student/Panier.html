@@ -8,8 +8,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue 3 CDN -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 py-10 px-4">
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between">
 
     <!-- Navigation -->
     <nav class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
@@ -28,6 +30,7 @@
 
                 <!-- Liens de Navigation -->
                 <div class="hidden md:flex items-center gap-8 font-medium text-sm text-slate-600">
+                    <a href="/index.html" class="hover:text-indigo-600 transition-colors py-1">Accueil</a>
                     <a href="/Auth/Student/Menu.html" class="hover:text-indigo-600 transition-colors py-1">Menu</a>
                     <a href="/Auth/Student/Panier.html" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 py-1">Panier</a>
                     <a href="/Auth/Student/Commande.html" class="hover:text-indigo-600 transition-colors py-1">Commande</a>
@@ -46,8 +49,96 @@
     </nav>
 
     <!-- Application Vue -->
-    <div id="app" class="max-w-6xl mx-auto">
-        <h1>Ici sera la page du panier pour les etudiants apres connexion.</h1>
+    <div id="app" class="max-w-6xl mx-auto px-4 py-8 flex-grow">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Mon Panier</h1>
+            <p class="text-slate-600 font-medium">Vérifiez vos articles avant de passer la commande</p>
+        </header>
+
+        <!-- Si le panier est vide -->
+        <div v-if="panier.length === 0" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center max-w-lg mx-auto">
+            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900 mb-2">Votre panier est vide</h2>
+            <p class="text-slate-500 text-sm mb-6">Vous n'avez pas encore ajouté de repas à votre panier.</p>
+            <a href="/Auth/Student/Menu.html" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-sm text-sm">
+                <i class="fa-solid fa-utensils"></i>
+                <span>Explorer le menu</span>
+            </a>
+        </div>
+
+        <!-- Si le panier contient des articles -->
+        <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Zone des articles -->
+            <div class="lg:col-span-2 space-y-4">
+                <!-- En-tête de la liste avec le bouton pour tout vider -->
+                <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <span class="font-bold text-slate-700 text-sm">Articles sélectionnés ({{ panier.length }})</span>
+                    <button 
+                        @click="viderPanier" 
+                        class="inline-flex items-center gap-2 text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl transition-colors border border-red-200/60"
+                        title="Vider tous les articles du panier"
+                    >
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>Vider le panier</span>
+                    </button>
+                </div>
+                
+                <!-- Liste des articles -->
+                <div v-for="(item, index) in panier" :key="index" class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <img :src="'../../public/img/' + item.productImagePath" :alt="item.productName" class="w-20 h-20 object-cover rounded-xl border border-slate-100 shrink-0">
+                        <div>
+                            <span class="text-xs font-mono text-slate-400">#{{ item.productNumber }}</span>
+                            <h3 class="font-bold text-slate-900 text-lg">{{ item.productName }}</h3>
+                            <p class="text-emerald-600 font-semibold text-sm">{{ Number(item.productPrice).toFixed(2) }} $</p>
+                        </div>
+                    </div>
+
+                    <!-- Gestion quantités et suppression -->
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+                            <button @click="modifierQuantite(index, -1)" class="px-3 py-1.5 text-slate-600 hover:bg-slate-200 transition-colors">
+                                <i class="fa-solid fa-minus text-xs"></i>
+                            </button>
+                            <span class="px-3 py-1.5 font-bold text-sm text-slate-800">{{ item.quantite }}</span>
+                            <button @click="modifierQuantite(index, 1)" class="px-3 py-1.5 text-slate-600 hover:bg-slate-200 transition-colors">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                        <button @click="supprimerItem(index)" class="text-slate-400 hover:text-red-600 transition-colors p-2" title="Supprimer">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Résumé / Facturation -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 h-fit space-y-4">
+                <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3">Résumé de la commande</h2>
+                
+                <div class="space-y-2 text-sm text-slate-600">
+                    <div class="flex justify-between">
+                        <span>Sous-total</span>
+                        <span class="font-semibold text-slate-800">{{ sousTotal.toFixed(2) }} $</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Taxes (14.975%)</span>
+                        <span class="font-semibold text-slate-800">{{ taxes.toFixed(2) }} $</span>
+                    </div>
+                    <div class="border-t border-slate-100 pt-3 flex justify-between text-base font-bold text-slate-900">
+                        <span>Total</span>
+                        <span class="text-indigo-600">{{ totalGeneral.toFixed(2) }} $</span>
+                    </div>
+                </div>
+
+                <button @click="passerCommande" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm text-center block">
+                    Confirmer la commande
+                </button>
+            </div>
+        </div>
     </div>
 
 
@@ -59,18 +150,92 @@
     </footer>
 
     <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
 
         const app = Vue.createApp({
-                data() {
-                    return {
-                        productsList: [],
-                    };
+            data() {
+                return {
+                    panier: [],
+                };
+            },
+            computed: {
+                sousTotal() {
+                    return this.panier.reduce((acc, item) => acc + (item.productPrice * item.quantite), 0);
                 },
-            });
+                taxes() {
+                    return this.sousTotal * 0.14975;
+                },
+                totalGeneral() {
+                    return this.sousTotal + this.taxes;
+                }
+            },
+            mounted() {
+                this.chargerPanier();
+            },
+            methods: {
+                chargerPanier() {
+                    const panierStorage = localStorage.getItem("panier");
+                    if (panierStorage) {
+                        this.panier = JSON.parse(panierStorage);
+                    }
+                },
+                sauvegarderPanier() {
+                    localStorage.setItem("panier", JSON.stringify(this.panier));
+                },
+                modifierQuantite(index, delta) {
+                    this.panier[index].quantite += delta;
+                    if (this.panier[index].quantite <= 0) {
+                        this.panier.splice(index, 1);
+                    }
+                    this.sauvegarderPanier();
+                },
+                supprimerItem(index) {
+                    this.panier.splice(index, 1);
+                    this.sauvegarderPanier();
+                },
+                viderPanier() {
+                    this.panier = [];
+                    localStorage.removeItem("panier");
+                },
+                passerCommande() {
+                    if (this.panier.length === 0) return;
+
+                    // Récupération des commandes existantes ou initialisation
+                    const commandesStorage = localStorage.getItem("commandes");
+                    let commandes = commandesStorage ? JSON.parse(commandesStorage) : [];
+
+                    // Création de la nouvelle commande avec les propriétés par défaut pour l'heure et le paiement
+                    const nouvelleCommande = {
+                        id: 'CMD-' + Math.floor(100000 + Math.random() * 900000),
+                        date: new Date().toLocaleString('fr-CA'),
+                        articles: [...this.panier],
+                        total: this.totalGeneral.toFixed(2),
+                        statut: 'En attente',
+                        heureRamassage: '',
+                        typePaiement: '',
+                        infosPaiement: {
+                            numeroCarte: '',
+                            expiration: '',
+                            cvv: '',
+                            emailPaypal: '',
+                            refVirement: ''
+                        }
+                    };
+
+                    commandes.push(nouvelleCommande);
+                    localStorage.setItem("commandes", JSON.stringify(commandes));
+
+                    // Vider le panier
+                    localStorage.removeItem("panier");
+                    this.panier = [];
+
+                    // Redirection vers la page de suivi des commandes
+                    window.location.href = "/Auth/Student/Commande.html";
+                }
+            }
+        });
 
         app.mount("#app");
-
-
     </script>
 </body>
 </html>

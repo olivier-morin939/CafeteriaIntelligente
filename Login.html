@@ -13,7 +13,7 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between">
 
-    <!-- Navigation -->
+    <!-- Navigation standard -->
     <nav class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -51,7 +51,7 @@
     <main id="app" class="max-w-md mx-auto px-4 py-10 w-full my-auto"> 
 
         <!-- Formulaire de Connexion -->
-        <div v-else class="space-y-6">
+        <div class="space-y-6">
             
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
                 <div class="text-center mb-8">
@@ -72,7 +72,7 @@
                     <!-- Champ Identifiant -->
                     <div>
                         <label for="userId" class="block text-sm font-semibold text-slate-700 mb-2">
-                            Numéro d'étudiant ou d'employé
+                            Numéro d'étudiant, d'employé ou d'admin
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -82,7 +82,7 @@
                                 id="userId"
                                 v-model.trim="userId"
                                 type="text"
-                                placeholder="ex: 202394852 ou EMP-1042"
+                                placeholder="ex: 202394852, EMP-1042 ou GEST-001"
                                 required
                                 class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
                             >
@@ -161,6 +161,17 @@
                         Remplir
                     </button>
                 </div>
+
+                <!-- Gestionnaire -->
+                <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center">
+                    <div>
+                        <p class="font-semibold text-slate-900">Gestionnaire : Jean Dupont</p>
+                        <p class="text-slate-500 font-mono">ID: <span class="text-slate-800">GEST-001</span> | Mdp: <span class="text-slate-800">admin123</span></p>
+                    </div>
+                    <button @click="fillDemo('GEST-001', 'admin123')" class="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-lg text-[11px] transition-colors">
+                        Remplir
+                    </button>
+                </div>
             </div>
 
         </div>
@@ -199,12 +210,17 @@
                             password: 'employe123',
                             fullName: 'Sophie Roy',
                             role: 'Employe'
+                        },
+                        {
+                            id: 'GEST-001',
+                            password: 'admin123',
+                            fullName: 'Jean Dupont',
+                            role: 'Admin'
                         }
                     ]
                 };
             },
             mounted() {
-                // Verifier au chargement si on a un cookie
                 this.checkExistingSession();
             },
             methods: {
@@ -228,23 +244,26 @@
                         if (matchedUser) {
                             this.currentUser = matchedUser;
                             this.saveUserCookie(matchedUser);
-                            if (matchedUser.role == "Etudiant") {
-                                // Redirection pour l'etudiant
+                            
+                            if (matchedUser.role === "Etudiant") {
                                 window.location.href = "/Auth/Student/Menu.html"; 
-                            } else {
-                                // Redirection pour l'employe
+                            } else if (matchedUser.role === "Employe") {
                                 window.location.href = "/Auth/Worker/Commandes.html"; 
+                            } else if (matchedUser.role === "Admin") {
+                                window.location.href = "/Auth/Admin/commandesAdmin.html"; 
                             }
                         } else {
                             this.errorMessage = 'Numéro d’identifiant ou mot de passe incorrect.';
                         }
                     }, 800);
-
-                    // Redirection vers les pages ou on doit etre connecter
                 },
                 saveUserCookie(user) {
-                    // Sélection du nom du cookie selon le role
-                    const cookieName = user.role === 'Étudiant' ? 'etudiantInfo' : 'employerInfo';
+                    let cookieName = 'employerInfo';
+                    if (user.role === 'Etudiant') {
+                        cookieName = 'etudiantInfo';
+                    } else if (user.role === 'Admin') {
+                        cookieName = 'adminInfo';
+                    }
                     
                     const userData = {
                         id: user.id,
@@ -258,6 +277,7 @@
                 checkExistingSession() {
                     const etudiantData = this.getCookie('etudiantInfo');
                     const employerData = this.getCookie('employerInfo');
+                    const adminData = this.getCookie('adminInfo');
 
                     if (etudiantData) {
                         this.currentUser = JSON.parse(etudiantData);
@@ -265,6 +285,9 @@
                     } else if (employerData) {
                         this.currentUser = JSON.parse(employerData);
                         this.cookieSavedName = 'employerInfo';
+                    } else if (adminData) {
+                        this.currentUser = JSON.parse(adminData);
+                        this.cookieSavedName = 'adminInfo';
                     }
                 },
                 fillDemo(id, pwd) {
@@ -272,18 +295,6 @@
                     this.password = pwd;
                     this.errorMessage = '';
                 },
-                logout() {
-                    if (this.currentUser) {
-                        const cookieName = this.currentUser.role === 'Étudiant' ? 'etudiantInfo' : 'employerInfo';
-                        this.deleteCookie(cookieName);
-                    }
-                    this.currentUser = null;
-                    this.cookieSavedName = '';
-                    this.password = '';
-                    this.userId = '';
-                },
-                
-                // Fonctions utilitaires Cookie
                 setCookie(name, value, days) {
                     let expires = "";
                     if (days) {

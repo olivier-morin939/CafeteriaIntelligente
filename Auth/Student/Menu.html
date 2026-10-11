@@ -8,8 +8,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue 3 CDN -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">    
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 py-10 px-4">
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between">
 
     <!-- Navigation -->
     <nav class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
@@ -28,6 +30,7 @@
 
                 <!-- Liens de Navigation -->
                 <div class="hidden md:flex items-center gap-8 font-medium text-sm text-slate-600">
+                    <a href="/index.html" class="hover:text-indigo-600 transition-colors py-1">Accueil</a>
                     <a href="/Auth/Student/Menu.html" class="text-indigo-600 font-semibold border-b-2 border-indigo-600 py-1">Menu</a>
                     <a href="/Auth/Student/Panier.html" class="hover:text-indigo-600 transition-colors py-1">Panier</a>
                     <a href="/Auth/Student/Commande.html" class="hover:text-indigo-600 transition-colors py-1">Commande</a>
@@ -46,63 +49,75 @@
     </nav>
 
     <!-- Application Vue -->
-    <div id="app" class="max-w-6xl mx-auto">
-        
-        <div v-if="productsList.length > 0">
-            <!-- Header -->
-            <header class="text-center mb-10">
-                <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Liste de repas disponibles</h1>
-                <p class="text-slate-600 font-medium">Caféteria Teccart — Faits frais tous les jours</p>
-            </header>
+    <div id="app" class="max-w-6xl mx-auto px-4 py-8 flex-grow">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Liste de repas disponibles</h1>
+            <p class="text-slate-600 font-medium">Caféteria Teccart — Faits frais tous les jours</p>
+        </header>
 
-            <!-- Grille de cartes -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div 
-                    v-for="(product, index) in productsList" 
-                    :key="index"
-                    class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-slate-200 flex flex-col justify-between"
-                >
-                    <div>
-                        <!-- Container Image -->
-                        <div class="relative h-48 bg-slate-200 overflow-hidden">
-                            <img 
-                                :src="'../../public/img/' + product.productImagePath" 
-                                :alt="product.productName"
-                                class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                            />
-                            <!-- Badge Code -->
-                            <span class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-xs px-2.5 py-1 rounded-full font-mono">
-                                #{{ product.productNumber }}
+        <!-- Grille de cartes -->
+        <div v-if="productsList.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+                v-for="(product, index) in productsList"
+                :key="product.id || index"
+                class="rounded-2xl transition-all duration-300 overflow-hidden border flex flex-col justify-between relative"
+                :class="indisponible(product)
+                    ? 'bg-slate-100 border-rose-300 opacity-70 shadow-none'
+                    : 'bg-white border-slate-200 shadow-md'"
+            >
+                <div>
+                    <div class="relative h-48 bg-slate-200 overflow-hidden">
+                        <img :src="'../../public/img/' + product.productImagePath"
+                            :alt="product.productName"
+                            class="w-full h-full object-cover"
+                            :class="{ 'grayscale contrast-50': indisponible(product) }" />
+
+                        <!-- Overlay « Indisponible » -->
+                        <div v-if="indisponible(product)"
+                            class="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px] flex items-center justify-center p-4 text-center z-10">
+                            <span class="bg-rose-600 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-lg uppercase tracking-wider">
+                                Indisponible pour aujourd'hui
                             </span>
                         </div>
-
-                        <!-- Contenu texte -->
-                        <div class="p-5">
-                            <div class="flex justify-between items-start gap-2 mb-2">
-                                <h2 class="text-xl font-bold text-slate-900 leading-snug">
-                                    {{ product.productName }}
-                                </h2>
-                                <!-- Badge Prix -->
-                                <span class="bg-emerald-100 text-emerald-800 font-bold text-sm px-3 py-1 rounded-lg shrink-0">
-                                    {{ Number(product.productPrice).toFixed(2) }} $
-                                </span>
-                            </div>
-                            <p class="text-slate-600 text-sm leading-relaxed">
-                                {{ product.productDesc }}
-                            </p>
-                        </div>
                     </div>
 
-                    <!-- Bouton d'action -->
-                    <div class="px-5 pb-5 pt-2">
-                        <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl transition-colors duration-200 shadow-sm active:scale-95" @click="AjouterAuPanier(index)">
-                            Ajouter au panier
-                        </button>
+                    <div class="p-5">
+                        <h2 class="text-xl font-bold mb-2"
+                            :class="indisponible(product) ? 'text-slate-500 line-through' : 'text-slate-900'">
+                            {{ product.productName }}
+                        </h2>
+                        <p class="text-slate-600 text-sm">{{ product.productDesc }}</p>
                     </div>
+                </div>
+
+                <div class="px-5 pb-5 pt-2">
+                    <button v-if="!indisponible(product)"
+                            @click="AjouterAuPanier(index)"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl transition-colors shadow-sm">
+                        Ajouter au panier
+                    </button>
+                    <button v-else disabled
+                            class="w-full bg-slate-200 text-slate-400 font-semibold py-2.5 rounded-xl cursor-not-allowed border border-slate-300">
+                        Rupture de stock
+                    </button>
                 </div>
             </div>
         </div>
 
+        <!-- Toast de Notification (Popup bas droite) -->
+        <div 
+            v-if="showToast" 
+            class="fixed bottom-6 right-6 z-50 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 transition-all duration-300 border"
+            :class="isErrorToast ? 'bg-rose-900 border-rose-700' : 'bg-slate-900 border-slate-700'"
+        >
+            <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" :class="isErrorToast ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'">
+                <i :class="isErrorToast ? 'fa-solid fa-triangle-exclamation text-sm' : 'fa-solid fa-check text-sm'"></i>
+            </div>
+            <div>
+                <p class="font-bold text-sm">{{ toastTitle }}</p>
+                <p class="text-xs text-slate-300">{{ toastMessage }}</p>
+            </div>
+        </div>
     </div>
 
     <!-- Footer simple -->
@@ -113,7 +128,6 @@
     </footer>
 
     <script>
-        // Fonction utilitaire pour générer le code produit
         function toutGenererUnCode(longueur = 8) {
             let result = '';
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -123,25 +137,30 @@
             return result;
         }
 
-        // Classe Produit
         class Produit {
+            static compteurId = 1;
+            #_id;
             #_productNumber;
 
-            constructor(productName, productDesc, productPrice, productImagePath) {
+            constructor(productName, productDesc, productPrice, productImagePath, stock = 10) {
+                this.#_id = this.constructor.compteurId++;
                 this.#_productNumber = toutGenererUnCode(8);
                 this.productName = productName;
                 this.productDesc = productDesc;
                 this.productPrice = productPrice;
                 this.productImagePath = productImagePath;
+                this.stock = stock;
             }
 
             toJSON() {
                 return {
+                    id: this.#_id,
                     productNumber: this.#_productNumber,
                     productName: this.productName,
                     productDesc: this.productDesc,
                     productPrice: this.productPrice,
-                    productImagePath: this.productImagePath
+                    productImagePath: this.productImagePath,
+                    stock: this.stock
                 };
             }
         }
@@ -150,19 +169,45 @@
             data() {
                 return {
                     productsList: [],
+                    showToast: false,
+                    toastTitle: '',
+                    toastMessage: '',
+                    isErrorToast: false,
+                    toastTimeout: null
                 };
             },
             mounted() {
-                // S'execute automatiquement au chargement de la page
-                this.IntialiseProducts();
+                this.InitialiseProducts();
+                setInterval(() => {
+                    const produitsStorage = localStorage.getItem("produits");
+                    if (produitsStorage) {
+                        this.productsList = JSON.parse(produitsStorage).map(p => ({
+                            ...p,
+                            stock: Number(p.stock)
+                        }));
+                    }
+                }, 1000);
             },
             methods: {
-                IntialiseProducts() {
+                indisponible(product) {
+                    return Number(product.stock) <= 0;
+                },
+                InitialiseProducts() {
                     const produitsStorage = localStorage.getItem("produits");
 
                     if (produitsStorage) {
-                        this.productsList = JSON.parse(produitsStorage);
-                        return;
+                        try {
+                            const parsedProducts = JSON.parse(produitsStorage);
+                            if (parsedProducts && parsedProducts.length > 0) {
+                                this.productsList = parsedProducts.map(p => ({
+                                    ...p,
+                                    stock: Number(p.stock)
+                                }));
+                                return;
+                            }
+                        } catch (e) {
+                            console.error("Erreur de lecture du localStorage :", e);
+                        }
                     }
 
                     const items = [
@@ -183,35 +228,57 @@
                     this.productsList = items.map(item => item.toJSON());
                     localStorage.setItem("produits", JSON.stringify(this.productsList));
                 },
-                AjouterAuPanier(indexProduit){
+                AjouterAuPanier(indexProduit) {
+                    const produitsStorage = localStorage.getItem("produits");
+                    if (produitsStorage) {
+                        this.productsList = JSON.parse(produitsStorage).map(p => ({
+                            ...p,
+                            stock: Number(p.stock)
+                        }));
+                    }
 
-                    // Recuperation du produit à ajouter
                     const produitSelectionne = this.productsList[indexProduit];
 
-                    // Recuperation et parsing du panier depuis le storage
+                    if (!produitSelectionne || this.indisponible(produitSelectionne)) {
+                        this.triggerToast("Rupture de stock !", "Ce produit est indisponible pour aujourd'hui.", true);
+                        return;
+                    }
+
                     const panierStorage = localStorage.getItem("panier");
                     let panier = panierStorage ? JSON.parse(panierStorage) : [];
 
-                    // Verification si le produit est deja dans le panier
-                    const produitExistant = panier.find(item => item.id === produitSelectionne.id);
+                    const produitExistant = panier.find(item => item.productNumber === produitSelectionne.productNumber);
+                    const quantiteDansPanier = produitExistant ? produitExistant.quantite : 0;
+
+                    if (quantiteDansPanier + 1 > produitSelectionne.stock) {
+                        this.triggerToast("Quantité maximale atteinte", `Stock limité à ${produitSelectionne.stock} unité(s) pour cet article.`, true);
+                        return;
+                    }
 
                     if (produitExistant) {
-                        // Si le produit existe, on incrémente sa quantite
-                        produitExistant.quantite = (produitExistant.quantite || 1) + 1;
+                        produitExistant.quantite += 1;
                     } else {
-                        // Sinon, on l'ajoute au panier avec une quantite initiale de 1
                         panier.push({
                             ...produitSelectionne,
                             quantite: 1
                         });
                     }
 
-                    // Sauvegarde du panier mis a jour dans le localStorage
                     localStorage.setItem("panier", JSON.stringify(panier));
-
+                    this.triggerToast("Ajouté au panier !", produitSelectionne.productName, false);
                 },
-            },
-            
+                triggerToast(title, message, isError) {
+                    this.toastTitle = title;
+                    this.toastMessage = message;
+                    this.isErrorToast = isError;
+                    this.showToast = true;
+
+                    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+                    this.toastTimeout = setTimeout(() => {
+                        this.showToast = false;
+                    }, 3000);
+                }
+            }
         });
 
         app.mount("#app");
